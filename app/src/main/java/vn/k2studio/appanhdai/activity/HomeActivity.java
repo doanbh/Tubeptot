@@ -1,5 +1,7 @@
 package vn.k2studio.appanhdai.activity;
 
+import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -7,48 +9,58 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import vn.k2studio.appanhdai.R;
+import vn.k2studio.appanhdai.adapter.ViewPagerAdapter;
+import vn.k2studio.appanhdai.fragment.CreateNewFragment;
+import vn.k2studio.appanhdai.fragment.ListNewsFragment;
 
 public class HomeActivity extends AppCompatActivity {
-    private DrawerLayout mDrawerLayout;
+    private DrawerLayout drawerLayout;
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
+    private NavigationView navigationView;
+    private ActionBarDrawerToggle drawerToggle;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
-
-        ActionBar ab = getSupportActionBar();
-        ab.setHomeAsUpIndicator(R.drawable.ic_menu);
-        ab.setDisplayHomeAsUpEnabled(true);
-
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        if (navigationView != null) {
-            setupDrawerContent(navigationView);
-        }
-
+        setContentView(R.layout.activity_home);
+        initToolbar();
+        setupDrawerLayout();
+        drawerToggle = setupDrawerToggle();
         mViewPager = (ViewPager) findViewById(R.id.view_pager);
         if (mViewPager != null) {
             setupViewPager(mViewPager);
         }
-
         mTabLayout = (TabLayout) findViewById(R.id.tab_layout);
         mTabLayout.setupWithViewPager(mViewPager);
+        mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                mViewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.drawer_view, menu);
+        getMenuInflater().inflate(R.menu.right_menu, menu);
         return true;
     }
 
@@ -56,27 +68,82 @@ public class HomeActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
+                drawerLayout.openDrawer(GravityCompat.START);
                 return true;
+            case R.id.nav_logout_right:
+                Intent j = new Intent(getApplicationContext(), RegisterActivity.class);
+                startActivity(j);
+                finish();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void setupViewPager(ViewPager viewPager) {
-//        Adapter adapter = new Adapter(getSupportFragmentManager());
-//        adapter.addFragment(new CheeseListFragment(), "Category 1");
-//        adapter.addFragment(new CheeseListFragment(), "Category 2");
-//        adapter.addFragment(new CheeseListFragment(), "Category 3");
-//        viewPager.setAdapter(adapter);
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFrag(ListNewsFragment.newInstance(), "Danh sách tin");
+        adapter.addFrag(CreateNewFragment.newInstance(), "Đăng tin");
+        viewPager.setAdapter(adapter);
     }
 
-    private void setupDrawerContent(NavigationView navigationView) {
+    private void initToolbar() {
+        toolbar = (Toolbar) findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+        }
+    }
+
+    private ActionBarDrawerToggle setupDrawerToggle() {
+        return new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open,
+                R.string.drawer_close);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggles
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    private void setupDrawerLayout() {
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
+
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        menuItem.setChecked(true);
-                        mDrawerLayout.closeDrawers();
+
+                        int id = menuItem.getItemId();
+
+                        switch (id) {
+                            case R.id.nav_home:
+                                Intent i = new Intent(getApplicationContext(), HomeActivity.class);
+                                startActivity(i);
+                                finish();
+                                break;
+                            case R.id.nav_logout:
+                                Intent j =
+                                        new Intent(getApplicationContext(), RegisterActivity.class);
+                                startActivity(j);
+                                finish();
+                                break;
+                        }
+
                         return true;
                     }
                 });

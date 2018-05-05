@@ -6,7 +6,9 @@
     <color name="colorAccent">#F55F2D</color>
     <color name="dull_teal">#5bafa2</color>
     <color name="colorWhite">#ffffff</color>
+    <color name="colorWhiteLight">#F6F6F6</color>
     <color name="color_white">#f4eef0</color>
     <color name="color_view_1dp">#AFe9dadf</color>
     <color name="light_gray">#bdc3c7</color>
+    <color name="color_black_small">#181717</color>
 </resources>
