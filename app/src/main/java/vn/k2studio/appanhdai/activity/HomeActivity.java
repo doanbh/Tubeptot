@@ -84,6 +84,7 @@ public class HomeActivity extends AppCompatActivity {
         adapter.addFrag(ListNewsFragment.newInstance(), "Danh sách tin");
         adapter.addFrag(CreateNewFragment.newInstance(), "Đăng tin");
         viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(2);
     }
 
     private void initToolbar() {

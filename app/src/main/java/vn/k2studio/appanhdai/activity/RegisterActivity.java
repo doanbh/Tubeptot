@@ -8,6 +8,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -15,8 +16,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import vn.k2studio.appanhdai.R;
+import vn.k2studio.appanhdai.presenter.RegisterPresenter;
+import vn.k2studio.appanhdai.presenter.RegisterPresenterImpl;
+import vn.k2studio.appanhdai.presenter.RegisterView;
+import vn.k2studio.appanhdai.view.ProgessView;
 
-public class RegisterActivity extends BaseActivity {
+public class RegisterActivity extends BaseActivity implements ProgessView, RegisterView {
     @BindView(R.id.register_txt_user_name)
     EditText mRegisterTxtUserName;
     @BindView(R.id.register_txt_birth_day)
@@ -31,6 +36,7 @@ public class RegisterActivity extends BaseActivity {
     RelativeLayout mMyProgessBar;
     private Calendar myCalendar;
     private DatePickerDialog.OnDateSetListener date;
+    private RegisterPresenter mRegisterPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -39,7 +45,7 @@ public class RegisterActivity extends BaseActivity {
 
     @Override
     protected void initView(Bundle savedInstanceState) {
-        ButterKnife.bind(this);
+        mRegisterPresenter = new RegisterPresenterImpl(this, this);
     }
 
     @Override
@@ -78,8 +84,43 @@ public class RegisterActivity extends BaseActivity {
                 hideSoftKeyboard(RegisterActivity.this);
                 break;
             case R.id.register_btn:
+//                checkRegister();
+                hideSoftKeyboard(RegisterActivity.this);
                 startActivity(HomeActivity.class);
                 break;
         }
+    }
+
+    private void checkRegister() {
+        String username = mRegisterTxtUserName.getText().toString();
+        String phone = mRegisterTxtNumberPhone.getText().toString();
+        String birthday = mRegisterTxtBirthDay.getText().toString();
+        String hometown = mRegisterTxtHomeTown.getText().toString();
+        if (username.equals("") || username == null) {
+            mRegisterTxtUserName.setError("Vui lòng nhập họ tên");
+        } else if (phone.equals("") || phone == null) {
+            mRegisterTxtNumberPhone.setError("Vui lòng nhập số điện thoại");
+        } else if (birthday.equals("") || birthday == null) {
+            mRegisterTxtBirthDay.setError("Vui lòng chọn ngày sinh");
+        } else if (hometown.equals("") || hometown == null) {
+            mRegisterTxtHomeTown.setError("Vui lòng chọn quê quán");
+        } else {
+            mRegisterPresenter.register(username, phone, birthday, hometown);
+        }
+    }
+
+    @Override
+    public void showProgess() {
+        mMyProgessBar.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void hideProgess() {
+        mMyProgessBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void navigationToHome(String sMessage) {
+        Toast.makeText(this, sMessage, Toast.LENGTH_LONG).show();
     }
 }

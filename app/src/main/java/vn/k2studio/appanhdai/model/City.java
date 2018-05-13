@@ -11,5 +11,29 @@ public class City {
     private String nameCity;
     @SerializedName("districts")
     @Expose
-    private ArrayList<String> listDistricts;
+    private ArrayList<District> listDistricts;
+
+    public int getIdCity() {
+        return idCity;
+    }
+
+    public void setIdCity(int idCity) {
+        this.idCity = idCity;
+    }
+
+    public String getNameCity() {
+        return nameCity;
+    }
+
+    public void setNameCity(String nameCity) {
+        this.nameCity = nameCity;
+    }
+
+    public ArrayList<District> getListDistricts() {
+        return listDistricts;
+    }
+
+    public void setListDistricts(ArrayList<District> listDistricts) {
+        this.listDistricts = listDistricts;
+    }
 }

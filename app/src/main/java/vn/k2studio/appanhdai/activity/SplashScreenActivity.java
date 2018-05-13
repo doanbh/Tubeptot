@@ -9,6 +9,9 @@ import android.provider.Settings;
 import vn.k2studio.appanhdai.R;
 import vn.k2studio.appanhdai.Utils.CheckGPS;
 import vn.k2studio.appanhdai.Utils.CheckInternet;
+import vn.k2studio.appanhdai.Utils.ConfigCity;
+import vn.k2studio.appanhdai.Utils.Constant;
+import vn.k2studio.appanhdai.Utils.SharedPrefs;
 
 public class SplashScreenActivity extends BaseActivity {
     @Override
@@ -48,9 +51,23 @@ public class SplashScreenActivity extends BaseActivity {
                     setDialogGPS();
                 } else {
                     startActivity(RegisterActivity.class);
+                    finish();
                 }
             }
         }, 1000);
+        if (!SharedPrefs.getInstance().get(Constant.LOAD_APP, Boolean.class)) {
+            goToConfigCity();
+        }
+    }
+
+    private void goToConfigCity() {
+        ConfigCity configCity = (ConfigCity) new ConfigCity(this) {
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                SharedPrefs.getInstance().put(Constant.LOAD_APP, true);
+            }
+        }.execute();
     }
 
     private void showDialogInternet() {

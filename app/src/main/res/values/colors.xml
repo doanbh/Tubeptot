@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#e4360f</color>
     <color name="colorPrimaryBlur">#8fe4360f</color>
     <color name="colorAccent">#F55F2D</color>
+    <color name="colorOrange">#6FF55F2D</color>
     <color name="dull_teal">#5bafa2</color>
     <color name="colorWhite">#ffffff</color>
     <color name="colorWhiteLight">#F6F6F6</color>
