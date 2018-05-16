@@ -6,4 +6,6 @@ package vn.k2studio.appanhdai.presenter;
 
 public interface RegisterView {
     public void navigationToHome(String sMessage);
+
+    public void toastMessage(String sMessage);
 }

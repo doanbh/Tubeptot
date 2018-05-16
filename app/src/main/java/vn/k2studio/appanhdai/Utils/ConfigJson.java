@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import vn.k2studio.appanhdai.model.City;
-
+import vn.k2studio.appanhdai.model.UserInfo;
 
 public class ConfigJson {
     public Gson gson;
@@ -25,5 +25,16 @@ public class ConfigJson {
         }.getType();
         List<City> listCity = gson.fromJson(textListCity, type);
         return listCity;
+    }
+
+    public String setUser(UserInfo userInfo) {
+        return gson.toJson(userInfo);
+    }
+
+    public UserInfo getUser(String userInfo) {
+        Type type = new TypeToken<UserInfo>() {
+        }.getType();
+        UserInfo userInfo1 = gson.fromJson(userInfo, type);
+        return userInfo1;
     }
 }

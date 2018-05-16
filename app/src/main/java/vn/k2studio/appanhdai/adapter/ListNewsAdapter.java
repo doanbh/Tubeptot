@@ -70,7 +70,7 @@ public class ListNewsAdapter extends RecyclerView.Adapter<ListNewsAdapter.ItemNe
                 .into(holder.mItemListImgAvatar);
         holder.mItemListTxtTitleNew.setText(itemNew.getTitleNew());
         holder.mItemListTxtDescriptionNew.setText(itemNew.getDescripNew());
-        final ArrayList<Integer> listImage = itemNew.getListImageNew();
+        final ArrayList<String> listImage = itemNew.getListImageNew();
         int countImage = width / 250;
         final int size = 250;
         boolean more = true;

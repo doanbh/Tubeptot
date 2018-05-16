@@ -10,6 +10,7 @@ import vn.k2studio.appanhdai.R;
 import vn.k2studio.appanhdai.Utils.CheckGPS;
 import vn.k2studio.appanhdai.Utils.CheckInternet;
 import vn.k2studio.appanhdai.Utils.ConfigCity;
+import vn.k2studio.appanhdai.Utils.ConfigJson;
 import vn.k2studio.appanhdai.Utils.Constant;
 import vn.k2studio.appanhdai.Utils.SharedPrefs;
 
@@ -50,8 +51,15 @@ public class SplashScreenActivity extends BaseActivity {
                 } else if (!CheckGPS.checkGpsStatus(getApplicationContext())) {
                     setDialogGPS();
                 } else {
-                    startActivity(RegisterActivity.class);
-                    finish();
+                    String isLogin =
+                            SharedPrefs.getInstance().get(Constant.USER_INFO, String.class);
+                    if (isLogin.equalsIgnoreCase("null")) {
+                        startActivity(RegisterActivity.class);
+                        finish();
+                    }else {
+                        startActivity(HomeActivity.class);
+                        finish();
+                    }
                 }
             }
         }, 1000);

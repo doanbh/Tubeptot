@@ -21,6 +21,12 @@ public class RegisterPresenterImpl implements RegisterPresenter, OnRegisterFinis
     }
 
     @Override
+    public void onError(String message) {
+        mProgessView.hideProgess();
+        mRegisterView.toastMessage(message);
+    }
+
+    @Override
     public void register(String user, String phone, String birthday, String hometown) {
         mInterator.register(user, phone, birthday, hometown, this);
                 mProgessView.showProgess();

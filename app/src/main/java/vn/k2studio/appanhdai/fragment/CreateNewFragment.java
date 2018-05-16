@@ -2,13 +2,16 @@ package vn.k2studio.appanhdai.fragment;
 
 import android.content.ClipData;
 import android.content.Intent;
-import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,14 +28,26 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import com.bumptech.glide.Glide;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 import vn.k2studio.appanhdai.R;
+import vn.k2studio.appanhdai.Utils.ConfigJson;
+import vn.k2studio.appanhdai.Utils.ConfigRetrofitApi;
 import vn.k2studio.appanhdai.Utils.ConfigSpinner;
+import vn.k2studio.appanhdai.Utils.Constant;
+import vn.k2studio.appanhdai.Utils.InterfaceAPI;
+import vn.k2studio.appanhdai.Utils.SharedPrefs;
 import vn.k2studio.appanhdai.adapter.ListImageAdapter;
 import vn.k2studio.appanhdai.adapter.SpinnerAdapter;
+import vn.k2studio.appanhdai.model.UserInfo;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -57,6 +73,11 @@ public class CreateNewFragment extends BaseFragment
     RecyclerView mFrmCreateNewRclListImage;
     @BindView(R.id.frm_create_new_btn_post)
     Button mFrmCreateNewBtnPost;
+    @BindView(R.id.frm_create_new_fab_post)
+    FloatingActionButton mFrmCreateNewFabPost;
+    @BindView(R.id.my_progess_bar)
+    RelativeLayout mMyProgessBar;
+    Unbinder unbinder;
     //    @BindView(R.id.ln_multi)
     //    LinearLayout pickedImageContainer;
     private ConfigSpinner mConfigSpinner;
@@ -68,6 +89,7 @@ public class CreateNewFragment extends BaseFragment
     private List<Uri> mUriList;
     private String imageEncoded;
     private List<String> imagesEncodedList;
+    private UserInfo mUserInfo;
 
     public static CreateNewFragment newInstance() {
         CreateNewFragment createNewFragment = new CreateNewFragment();
@@ -83,6 +105,9 @@ public class CreateNewFragment extends BaseFragment
 
     @Override
     protected void init(View mRoot, Bundle savedInstanceState) throws ParseException {
+        ConfigJson configJson = new ConfigJson();
+        mUserInfo =
+                configJson.getUser(SharedPrefs.getInstance().get(Constant.USER_INFO, String.class));
         mConfigSpinner = new ConfigSpinner(getActivity());
         listCity = new ArrayList<>();
         mUriList = new ArrayList<>();
@@ -139,8 +164,65 @@ public class CreateNewFragment extends BaseFragment
                         PICK_IMAGE_MULTIPLE);
                 break;
             case R.id.frm_create_new_btn_post:
+                postNew();
                 break;
         }
+    }
+
+    private void postNew() {
+        mMyProgessBar.setVisibility(View.VISIBLE);
+        String nameCity = listCity.get(mFrmCreateNewSpnCity.getSelectedItemPosition());
+        String nameDistrict = mFrmCreateNewSpnDistrict.getSelectedItem().toString();
+        String content = mFrmCreateNewEdtContent.getText().toString();
+        String title = "abc";
+        Retrofit retrofit = ConfigRetrofitApi.getInstance();
+        retrofit.create(InterfaceAPI.class)
+                .postNew(nameCity, nameDistrict, content, mUserInfo.getNumberPhone(), title,
+                        parseListImageToBase64())
+                .enqueue(new Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        if (response.body() != null) {
+                            if (response.body().equalsIgnoreCase("1")) {
+                                Toast.makeText(getActivity(), "Đăng bài thành công",
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getActivity(), "Đăng bài thất bại",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        mMyProgessBar.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                        mMyProgessBar.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+    private ArrayList<String> parseListImageToBase64() {
+        ArrayList<String> listImages = new ArrayList<>();
+        for (Uri uri : mUriList) {
+            InputStream imageStream = null;
+            try {
+                imageStream = getActivity().getContentResolver().openInputStream(uri);
+                Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                String encodedImage = encodeImage(selectedImage);
+                listImages.add(encodedImage);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return listImages;
+    }
+
+    private String encodeImage(Bitmap bm) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] b = baos.toByteArray();
+        String encImage = Base64.encodeToString(b, Base64.DEFAULT);
+        return encImage;
     }
 
     @Override
@@ -194,19 +276,16 @@ public class CreateNewFragment extends BaseFragment
     private void addListImage(ClipData mClipData) {
         int pickedImageCount;
 
-        for (pickedImageCount = 0;
-                pickedImageCount < mClipData.getItemCount();
+        for (pickedImageCount = 0; pickedImageCount < mClipData.getItemCount();
                 pickedImageCount++) {
-            mUriList.add(
-                    mClipData.getItemAt(pickedImageCount).getUri());
+            mUriList.add(mClipData.getItemAt(pickedImageCount).getUri());
         }
     }
 
     private void setUpListImage() {
         mFrmCreateNewRclListImage.setHasFixedSize(true);
         mLayoutManager = new GridLayoutManager(getActivity(), 2);
-        mListImageAdapter =
-                new ListImageAdapter(getActivity(), mUriList);
+        mListImageAdapter = new ListImageAdapter(getActivity(), mUriList);
         //                            mListImageAdapter.setHasStableIds(true);
         mFrmCreateNewRclListImage.setLayoutManager(mLayoutManager);
         mFrmCreateNewRclListImage.setAdapter(mListImageAdapter);
@@ -218,5 +297,25 @@ public class CreateNewFragment extends BaseFragment
         mUriList.remove(position);
         mListImageAdapter.notifyItemRemoved(position);
         mListImageAdapter.notifyItemRangeChanged(position, mUriList.size());
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+        // TODO: inflate a fragment view
+        View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, rootView);
+        return rootView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
+    @OnClick(R.id.frm_create_new_fab_post)
+    public void onViewClicked() {
+        postNew();
     }
 }

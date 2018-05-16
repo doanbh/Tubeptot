@@ -45,6 +45,7 @@ public class RegisterActivity extends BaseActivity implements ProgessView, Regis
 
     @Override
     protected void initView(Bundle savedInstanceState) {
+        hiddenInputType();
         mRegisterPresenter = new RegisterPresenterImpl(this, this);
     }
 
@@ -84,9 +85,8 @@ public class RegisterActivity extends BaseActivity implements ProgessView, Regis
                 hideSoftKeyboard(RegisterActivity.this);
                 break;
             case R.id.register_btn:
-//                checkRegister();
+                checkRegister();
                 hideSoftKeyboard(RegisterActivity.this);
-                startActivity(HomeActivity.class);
                 break;
         }
     }
@@ -121,6 +121,12 @@ public class RegisterActivity extends BaseActivity implements ProgessView, Regis
 
     @Override
     public void navigationToHome(String sMessage) {
+        startActivity(HomeActivity.class);
         Toast.makeText(this, sMessage, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void toastMessage(String sMessage) {
+        Toast.makeText(this, sMessage, Toast.LENGTH_SHORT).show();
     }
 }

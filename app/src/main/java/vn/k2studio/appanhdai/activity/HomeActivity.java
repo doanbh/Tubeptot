@@ -15,6 +15,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import vn.k2studio.appanhdai.R;
+import vn.k2studio.appanhdai.Utils.Constant;
+import vn.k2studio.appanhdai.Utils.SharedPrefs;
 import vn.k2studio.appanhdai.adapter.ViewPagerAdapter;
 import vn.k2studio.appanhdai.fragment.CreateNewFragment;
 import vn.k2studio.appanhdai.fragment.ListNewsFragment;
@@ -71,6 +73,7 @@ public class HomeActivity extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.nav_logout_right:
+                SharedPrefs.getInstance().put(Constant.USER_INFO, null);
                 Intent j = new Intent(getApplicationContext(), RegisterActivity.class);
                 startActivity(j);
                 finish();
@@ -138,6 +141,7 @@ public class HomeActivity extends AppCompatActivity {
                                 finish();
                                 break;
                             case R.id.nav_logout:
+                                SharedPrefs.getInstance().put(Constant.USER_INFO, null);
                                 Intent j =
                                         new Intent(getApplicationContext(), RegisterActivity.class);
                                 startActivity(j);

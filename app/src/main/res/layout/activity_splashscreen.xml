@@ -17,7 +17,7 @@
             android:layout_height="120dp"
             android:scaleType="centerCrop"
             android:adjustViewBounds="true"
-            android:src="@drawable/icon_app"
+            android:src="@drawable/badge"
             />
         <TextView
             android:layout_marginTop="15dp"
@@ -76,7 +76,7 @@
                 android:id="@+id/img_submit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/delete_64px"
+                android:src="@drawable/delete_green_64px"
                 />
         </LinearLayout>
     </LinearLayout>

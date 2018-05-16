@@ -8,10 +8,10 @@ public class ItemNew {
     private String timeAgo;
     private String titleNew;
     private String descripNew;
-    private ArrayList<Integer> listImageNew;
+    private ArrayList<String> listImageNew;
 
     public ItemNew(String nameOwnPost, int avaOwnPost, String timeAgo, String titleNew,
-            String descripNew, ArrayList<Integer> listImageNew) {
+            String descripNew, ArrayList<String> listImageNew) {
         this.nameOwnPost = nameOwnPost;
         this.avaOwnPost = avaOwnPost;
         this.timeAgo = timeAgo;
@@ -60,11 +60,11 @@ public class ItemNew {
         this.descripNew = descripNew;
     }
 
-    public ArrayList<Integer> getListImageNew() {
+    public ArrayList<String> getListImageNew() {
         return listImageNew;
     }
 
-    public void setListImageNew(ArrayList<Integer> listImageNew) {
+    public void setListImageNew(ArrayList<String> listImageNew) {
         this.listImageNew = listImageNew;
     }
 }
