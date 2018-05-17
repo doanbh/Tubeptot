@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#00000000"
+    >
+
+    <RelativeLayout
+        android:id="@+id/rlmain"
+        android:layout_width="fill_parent"
+        android:layout_height="150dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:background="#569CE3"
+        >
+
+        <RelativeLayout
+            android:id="@+id/relativeLayout1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="25dip"
+            android:layout_marginTop="10dip"
+            >
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:text="Chọn ảnh ?"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:textSize="16sp"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/relativeLayout2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/relativeLayout1"
+            android:layout_alignRight="@+id/relativeLayout1"
+            android:layout_below="@+id/relativeLayout1"
+            android:layout_marginTop="5dip"
+            >
+        </RelativeLayout>
+
+        <ProgressBar
+            android:id="@+id/process"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="3dip"
+            android:layout_marginTop="3dip"
+            style="?android:attr/progressBarStyleSmall"
+            />
+
+        <RelativeLayout
+            android:id="@+id/relativeLayout3"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/relativeLayout2"
+            android:layout_below="@+id/relativeLayout2"
+            android:layout_toLeftOf="@+id/process"
+            >
+
+            <TextView
+                android:id="@+id/message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:text="Bạn có thể chọn ảnh từ thư viện hoặc chụp ảnh mới"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:textSize="13dip"
+                />
+
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/btn_pick_image"
+            android:layout_width="90dip"
+            android:layout_height="35dip"
+            android:layout_alignParentBottom="true"
+            android:layout_alignRight="@+id/relativeLayout3"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_button"
+            android:text="Chọn ảnh"
+            android:textColor="@android:color/white"
+            android:textSize="10dp"
+            />
+
+        <Button
+            android:id="@+id/btn_take_photo"
+            android:layout_width="90dip"
+            android:layout_height="35dip"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="7dp"
+            android:layout_toLeftOf="@+id/btn_pick_image"
+            android:background="@drawable/bg_button"
+            android:text="Chụp ảnh"
+            android:textColor="@android:color/white"
+            android:textSize="10dp"
+            />
+
+    </RelativeLayout>
+</RelativeLayout>

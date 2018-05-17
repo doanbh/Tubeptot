@@ -1,17 +1,29 @@
 package vn.k2studio.appanhdai.fragment;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ClipData;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,11 +40,16 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import com.bumptech.glide.Glide;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -50,6 +67,7 @@ import vn.k2studio.appanhdai.adapter.SpinnerAdapter;
 import vn.k2studio.appanhdai.model.UserInfo;
 
 import static android.app.Activity.RESULT_OK;
+import static vn.k2studio.appanhdai.Utils.Constant.TAKE_PHOTO_CODE;
 
 public class CreateNewFragment extends BaseFragment
         implements ListImageAdapter.OnHandleClickImageListener {
@@ -90,6 +108,11 @@ public class CreateNewFragment extends BaseFragment
     private String imageEncoded;
     private List<String> imagesEncodedList;
     private UserInfo mUserInfo;
+    private String dir;
+    private Uri outputFileUri;
+    String mCurrentPhotoPath;
+    private static final int PERMISSION_REQUEST_CAMERA = 0;
+    public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
 
     public static CreateNewFragment newInstance() {
         CreateNewFragment createNewFragment = new CreateNewFragment();
@@ -154,14 +177,8 @@ public class CreateNewFragment extends BaseFragment
 
                 break;
             case R.id.frm_create_new_img_add:
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                }
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"),
-                        PICK_IMAGE_MULTIPLE);
+                checkPermission();
+                creatDialogPickImage();
                 break;
             case R.id.frm_create_new_btn_post:
                 postNew();
@@ -271,6 +288,24 @@ public class CreateNewFragment extends BaseFragment
                     Toast.LENGTH_LONG).show();
         }
         super.onActivityResult(requestCode, resultCode, data);
+        for (Fragment fragment : getChildFragmentManager().getFragments()) {
+            fragment.onActivityResult(requestCode, resultCode, data);
+        }
+        switch (requestCode) {
+            case TAKE_PHOTO_CODE:
+                if (resultCode == RESULT_OK) {
+                    galleryAddPic();
+                    //                    Log.d("CameraDemo", "Pic saved");
+                    //                    Bundle extras = data.getExtras();
+                    //                    ((CompleteCvEmployerActivity) getActivity()).setImage(
+                    //                            String.valueOf(outputFileUri));
+                    //                        Bitmap help1 = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(),outputFileUri);
+                    Log.e("URI", outputFileUri.toString());
+                    //
+                    //                    Bitmap bmp = (Bitmap) extras.get("data");
+                }
+                break;
+        }
     }
 
     private void addListImage(ClipData mClipData) {
@@ -299,6 +334,88 @@ public class CreateNewFragment extends BaseFragment
         mListImageAdapter.notifyItemRangeChanged(position, mUriList.size());
     }
 
+    private void creatDialogPickImage() {
+        LayoutInflater layoutInflater = getLayoutInflater();
+        View dialog = layoutInflater.inflate(R.layout.dialog_pick_image, null, false);
+        Button btnPickImage = dialog.findViewById(R.id.btn_pick_image);
+        Button btnTakePhoto = dialog.findViewById(R.id.btn_take_photo);
+        final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        alert.setView(dialog);
+        alert.setCancelable(true);
+        final AlertDialog dialog1 = alert.create();
+        dialog1.show();
+        btnPickImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                }
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"),
+                        PICK_IMAGE_MULTIPLE);
+                dialog1.dismiss();
+            }
+        });
+        btnTakePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    // Create the File where the photo should go
+                    File photoFile = null;
+                    try {
+                        photoFile = createImageFile();
+                    } catch (IOException ex) {
+                        // Error occurred while creating the File
+                    }
+                    // Continue only if the File was successfully created
+                    if (photoFile != null) {
+                        Uri photoURI = FileProvider.getUriForFile(getActivity(),
+                                getActivity().getPackageName() + ".share", photoFile);
+                        outputFileUri = photoURI;
+                        cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        startActivityForResult(cameraIntent, TAKE_PHOTO_CODE);
+                    }
+                }
+                dialog1.dismiss();
+            }
+        });
+    }
+
+    private void takePhoto() {
+        dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                + "/picFolder/";
+        File newdir = new File(dir);
+        newdir.mkdirs();
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */);
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(mCurrentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mUriList.add(contentUri);
+        setUpListImage();
+        mediaScanIntent.setData(contentUri);
+        getActivity().sendBroadcast(mediaScanIntent);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
@@ -317,5 +434,89 @@ public class CreateNewFragment extends BaseFragment
     @OnClick(R.id.frm_create_new_fab_post)
     public void onViewClicked() {
         postNew();
+    }
+
+    public boolean checkPermissionREAD_EXTERNAL_STORAGE() {
+        int currentAPIVersion = Build.VERSION.SDK_INT;
+        if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(getActivity(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    showDialog("External storage", getActivity(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE);
+                } else {
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[] { Manifest.permission.READ_EXTERNAL_STORAGE },
+                            MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+                }
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public void showDialog(final String msg, final Context context, final String permission) {
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
+        alertBuilder.setCancelable(true);
+        alertBuilder.setTitle("Permission necessary");
+        alertBuilder.setMessage(msg + " permission is necessary");
+        alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                ActivityCompat.requestPermissions((Activity) context, new String[] { permission },
+                        MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+            }
+        });
+        AlertDialog alert = alertBuilder.create();
+        alert.show();
+    }
+
+    private void checkPermission() {
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is already available, start camera preview
+            requestCameraPermission();
+        }
+    }
+
+    private void requestCameraPermission() {
+        // Permission has not been granted and must be requested.
+        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                Manifest.permission.CAMERA)) {
+            // Provide an additional rationale to the user if the permission was not granted
+            // and the user would benefit from additional context for the use of the permission.
+            // Display a SnackBar with a button to request the missing permission.
+            // Request the permission
+        } else {
+            // Request the permission. The result will be received in onRequestPermissionResult().
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[] { Manifest.permission.CAMERA }, PERMISSION_REQUEST_CAMERA);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
+            int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 }

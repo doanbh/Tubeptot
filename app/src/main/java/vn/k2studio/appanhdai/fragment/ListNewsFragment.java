@@ -69,7 +69,7 @@ public class ListNewsFragment extends BaseFragment {
                             Response<ArrayList<ItemNewFromApi>> response) {
                         if (response.body() != null) {
                             for (ItemNewFromApi itemNew : response.body()) {
-                                mItemNews.add(new ItemNew(mUserInfo.getName(), R.drawable.doan,
+                                mItemNews.add(new ItemNew(mUserInfo.getName(), R.drawable.user,
                                         itemNew.getNew_time(), itemNew.getNew_title(),
                                         itemNew.getNew_content(),
                                         (ArrayList<String>) itemNew.getNew_list_image()));
