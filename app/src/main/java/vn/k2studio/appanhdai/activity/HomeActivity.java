@@ -14,12 +14,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import vn.k2studio.appanhdai.R;
+import vn.k2studio.appanhdai.Utils.ConfigJson;
 import vn.k2studio.appanhdai.Utils.Constant;
 import vn.k2studio.appanhdai.Utils.SharedPrefs;
 import vn.k2studio.appanhdai.adapter.ViewPagerAdapter;
 import vn.k2studio.appanhdai.fragment.CreateNewFragment;
 import vn.k2studio.appanhdai.fragment.ListNewsFragment;
+import vn.k2studio.appanhdai.model.UserInfo;
 
 public class HomeActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
@@ -28,6 +33,10 @@ public class HomeActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private ActionBarDrawerToggle drawerToggle;
     private Toolbar toolbar;
+    private View mHeaderViewNav;
+    private TextView txtHeaderAccount;
+    private ImageView imgHeaderAcount;
+    private UserInfo mUserInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +44,13 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         initToolbar();
         setupDrawerLayout();
+        mHeaderViewNav = navigationView.getHeaderView(0);
+        txtHeaderAccount = mHeaderViewNav.findViewById(R.id.txt_nav_email);
+        imgHeaderAcount = mHeaderViewNav.findViewById(R.id.img_avatar);
+        ConfigJson configJson = new ConfigJson();
+        mUserInfo =
+                configJson.getUser(SharedPrefs.getInstance().get(Constant.USER_INFO, String.class));
+        txtHeaderAccount.setText(mUserInfo.getName());
         drawerToggle = setupDrawerToggle();
         mViewPager = (ViewPager) findViewById(R.id.view_pager);
         if (mViewPager != null) {

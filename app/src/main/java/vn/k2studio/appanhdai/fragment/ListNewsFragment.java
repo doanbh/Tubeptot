@@ -3,13 +3,9 @@ package vn.k2studio.appanhdai.fragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import retrofit2.Call;
@@ -26,6 +22,8 @@ import vn.k2studio.appanhdai.adapter.ListNewsAdapter;
 import vn.k2studio.appanhdai.model.ItemNew;
 import vn.k2studio.appanhdai.model.ItemNewFromApi;
 import vn.k2studio.appanhdai.model.UserInfo;
+
+import static vn.k2studio.appanhdai.fragment.ListNewsFragment.getTimeAgoClass.getTimeAgo;
 
 public class ListNewsFragment extends BaseFragment {
     @BindView(R.id.frm_list_news_rcl)
@@ -70,12 +68,12 @@ public class ListNewsFragment extends BaseFragment {
                         if (response.body() != null) {
                             for (ItemNewFromApi itemNew : response.body()) {
                                 mItemNews.add(new ItemNew(mUserInfo.getName(), R.drawable.user,
-                                        itemNew.getNew_time(), itemNew.getNew_title(),
+                                        makeTimeAgo(itemNew.getNew_time()), itemNew.getNew_title(),
                                         itemNew.getNew_content(),
                                         (ArrayList<String>) itemNew.getNew_list_image()));
                             }
-                            mLayoutManager =
-                                    new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+                            mLayoutManager = new LinearLayoutManager(getActivity(),
+                                    LinearLayoutManager.VERTICAL, false);
                             mListNewsAdapter = new ListNewsAdapter(mItemNews, getActivity());
                             mFrmListNewsRcl.setLayoutManager(mLayoutManager);
                             mFrmListNewsRcl.setAdapter(mListNewsAdapter);
@@ -104,5 +102,56 @@ public class ListNewsFragment extends BaseFragment {
             listImage.add(R.drawable.doan);
         }
         return listImage;
+    }
+
+    public static class getTimeAgoClass {
+        private static final int SECOND_MILLIS = 1000;
+        private static final int MINUTE_MILLIS = 60 * SECOND_MILLIS;
+        private static final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
+        private static final int DAY_MILLIS = 24 * HOUR_MILLIS;
+
+        public static String getTimeAgo(long time) {
+            if (time < 1000000000000L) {
+                // if timestamp given in seconds, convert to millis
+                time *= 1000;
+            }
+
+            long now = System.currentTimeMillis();
+            ;
+            if (time > now || time <= 0) {
+                return null;
+            }
+
+            // TODO: localize
+            final long diff = now - time;
+            if (diff < MINUTE_MILLIS) {
+                return "bây giờ";
+            } else if (diff < 2 * MINUTE_MILLIS) {
+                return "một phút trước";
+            } else if (diff < 50 * MINUTE_MILLIS) {
+                return diff / MINUTE_MILLIS + " phút trước";
+            } else if (diff < 90 * MINUTE_MILLIS) {
+                return "một giờ trước";
+            } else if (diff < 24 * HOUR_MILLIS) {
+                return diff / HOUR_MILLIS + " giờ trước";
+            } else if (diff < 48 * HOUR_MILLIS) {
+                return "ngày hôm qua";
+            } else if (diff < 30 * DAY_MILLIS) {
+                return diff / DAY_MILLIS + " ngày trước";
+            } else {
+                int div = (int) (diff / DAY_MILLIS) / 30;
+                if (div == 0) {
+                    return diff / DAY_MILLIS + " ngày trước";
+                } else {
+                    return div + " tháng trước";
+                }
+            }
+        }
+    }
+
+    private String makeTimeAgo(String timeInt) {
+        long time = Long.parseLong(timeInt) * 1000;
+        String sAgoTime = getTimeAgo(time);
+        return sAgoTime;
     }
 }
